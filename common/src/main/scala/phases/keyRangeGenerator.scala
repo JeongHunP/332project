@@ -2,6 +2,7 @@ package rangegenerator
 
 import scala.collection.mutable.Buffer
 import protos.network.Range
+import scala.concurrent._
 import common.Utils
 
 class keyRangeGenerator(
@@ -13,7 +14,9 @@ class keyRangeGenerator(
   var sortedSamples: Seq[String] =
     temp.sortWith((s1, s2) => Utils.comparator(s1, s2))
 
-  def generateKeyrange(): Seq[Range] = {
+  def generateKeyrange(): Future[Seq[Range]] = {
+    val p = Promise[Seq[Range]]
+
     val numPoints = numWorkers - 1
     val term = sortedSamples.length / numWorkers
     val remain = sortedSamples.length % numWorkers
@@ -35,6 +38,9 @@ class keyRangeGenerator(
         ranges = ranges :+ el
       }
     }
-    ranges :+ Range(sortedSamples(points.last), "~~~~~~~~~~")
+    val res = ranges :+ Range(sortedSamples(points.last), "~~~~~~~~~~")
+    p.success(res)
+
+    p.future
   }
 }

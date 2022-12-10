@@ -32,6 +32,10 @@ import rangegenerator.keyRangeGenerator
 import shufflenetwork.FileServer
 import common.{WorkerState, WorkerInfo}
 import scala.concurrent.duration.Duration
+import scala.util.Success
+import scala.util.Failure
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
 
 object NetworkServer {
   private val logger =
@@ -173,21 +177,23 @@ class NetworkServer(executionContext: ExecutionContext, numClients: Int) {
       if (
         waitWhile(() => !isAllWorkersSameState(WorkerState.Sampling), 100000)
       ) {
-        val keyRanges: Seq[Range] =
+        val keyRangesFuture: Future[Seq[Range]] =
           new keyRangeGenerator(req.samples, numClients)
             .generateKeyrange()
-        keyRanges.foreach(println)
+        // keyRanges.foreach(println)
 
+        val ranges = Await.result(keyRangesFuture, Duration.Inf)
         val reply = SamplingReply(
           result = ResultType.SUCCESS,
           // message = "Connection complete to master from " + addr.ip
-          ranges = keyRanges,
+          ranges = ranges,
           addresses = addressList
         )
 
         NetworkServer.logger.info(
           "[Sampling] sampling completed from  " + addr.ip + ":" + addr.port
         )
+
         Future.successful(reply)
       } else {
         val reply = SamplingReply(
@@ -198,6 +204,7 @@ class NetworkServer(executionContext: ExecutionContext, numClients: Int) {
         NetworkServer.logger.info(
           "[Sampling] sampling failed from " + addr.ip + ":" + addr.port
         )
+
         Future.successful(reply)
       }
 
