@@ -1,5 +1,23 @@
 # 332project - Red Team(jyhong1, daehuikim, JeongHunP)
 
+## How to test?
+1. git clone [our repo]
+2. Go to our repo's directory(332project)
+3. To run master, type-> sbt "run master {number of workers}"
+4. To run worker, type-> 
+sbt "run worker { masterIp:masterPort(Port initialized to 50051) } -I {path of input data} -O {output directory}
+* Ex) If input directory exists in 332project/data1/input, {path of input data} will be /data1/input/ .
+* Ex) master: sbt "run master 4"
+      worker: sbt "run worker -I /data/input1/ /data/input2/ -O /data/output"
+You can add various input files such as /data1/input/ /data2/input/ .
+5. Result is sorted in {output directory} including several files.
+
+## Test list
+1. Test environment : vm servers (eg. 2.2.2.101:50051)
+2. Test with 10 lines, 1MB, 32MB blocks. Total size of blocks will be increased while test.
+3. Give input of one dir, severl dirs, and repeated dirs.
+4. Verify with valsort.
+
 ## Milestones (*These might be changed)
 --- 
 <details>
@@ -61,3 +79,4 @@
 5. [Week5](./Weekly%20Progress%20report/Week5.md)
 6. [Week6](./Weekly%20Progress%20report/Week6.md)
 7. [Week7](./Weekly%20Progress%20report/Week7.md)
+8. [Week8](./Weekly%20Progress%20report/Week8.md)
