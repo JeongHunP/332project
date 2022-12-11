@@ -1,12 +1,12 @@
 package shufflenetwork
 
 import shuffle.shuffle.{
-    sAddress,
-    sResultType,
-    partitionFile,
-    ShuffleNetworkGrpc,
-    SendPartitionRequest,
-    SendPartitionReply
+  sAddress,
+  sResultType,
+  partitionFile,
+  ShuffleNetworkGrpc,
+  SendPartitionRequest,
+  SendPartitionReply
 }
 import io.grpc.{ManagedChannel, StatusRuntimeException, ManagedChannelBuilder}
 import java.net.InetAddress
@@ -21,7 +21,10 @@ import common.Utils
 object FileClient {
   def apply(host: String, port: Int): FileClient = {
     val channel =
-      ManagedChannelBuilder.forAddress(host, port).usePlaintext().build
+      ManagedChannelBuilder
+        .forAddress(host, port)
+        .usePlaintext()
+        .maxInboundMessageSize(100 * 1024 * 1024) build
     val blockingStub = ShuffleNetworkGrpc.blockingStub(channel)
 
     new FileClient(channel, blockingStub)
@@ -42,23 +45,32 @@ class FileClient(
     channel.shutdown.awaitTermination(5, TimeUnit.SECONDS)
   }
 
-
-  def sendPartition(to: String, inputpaths: List[String], outputpath: String): SendPartitionReply = {
-    logger.info("[Shuffle] Try to send partition from" + localhostIP + "to" + to)
+  def sendPartition(
+      to: String,
+      inputpaths: List[String],
+      outputpath: String
+  ): SendPartitionReply = {
+    logger.info(
+      "[Shuffle] Try to send partition from" + localhostIP + "to" + to
+    )
     val fromaddr = sAddress(localhostIP, port)
     val choosenFiles = inputpaths.filter(_.split("/").last.split("_")(1) == to)
     val filenames = choosenFiles.map(file => file.split("/").last)
-    var partitions:Seq[partitionFile] = Seq() 
-    for(i <- choosenFiles){
+    var partitions: Seq[partitionFile] = Seq()
+    for (i <- choosenFiles) {
       partitions = partitions :+ Utils.getPartitionFile(i)
     }
-    val request = SendPartitionRequest(Some(fromaddr), partitions, filenames.toSeq, outputpath)
-    try{
-        val response = blockingStub.sendPartition(request)
-        response
-    }catch{
-        case e: StatusRuntimeException =>
-
+    val request = SendPartitionRequest(
+      Some(fromaddr),
+      partitions,
+      filenames.toSeq,
+      outputpath
+    )
+    try {
+      val response = blockingStub.sendPartition(request)
+      response
+    } catch {
+      case e: StatusRuntimeException =>
         logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus)
 
         SendPartitionReply(sResultType.FAILURE)

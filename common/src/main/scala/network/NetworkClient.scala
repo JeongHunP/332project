@@ -30,6 +30,7 @@ import java.io.{OutputStream, FileOutputStream, File, IOException}
 import java.nio.file.{Files, Path, Paths}
 import scala.concurrent.{Promise, Await}
 import scala.concurrent.duration._
+import com.google.protobuf.ByteString
 
 object NetworkClient {
   def apply(host: String, port: Int): NetworkClient = {

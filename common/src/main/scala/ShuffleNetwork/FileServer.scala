@@ -94,12 +94,17 @@ class FileServer(executionContext: ExecutionContext, numClients: Int) {
       FileServer.logger.info(
         "[Shuffle] Partition from" + addr.ip + ":" + addr.port + " arrived"
       )
-      
+
       Utils.createdir(req.outputpath)
 
       count.synchronized {
         for (i <- 0 to req.partitions.length - 1) {
           val partition = req.partitions(i)
+          //
+          val newPath = req.outputpath + "/" + req.filenames(i)
+          val newFile = new File(newPath)
+          if (!newFile.exists())
+            newFile.createNewFile()
           val writer = new BufferedWriter(
             new FileWriter(req.outputpath + "/" + req.filenames(i))
           )

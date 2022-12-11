@@ -28,7 +28,7 @@ object mergeHelper {
       val files = Utils.getFilePathsFromDir(List(d))
       var partitions: Seq[Seq[String]] = Seq()
       for (f <- files) {
-        var items = Utils.getFile(f)
+        var items = Source.fromFile(f) // Utils.getFile(f)
         partitions :+ items
       }
 
